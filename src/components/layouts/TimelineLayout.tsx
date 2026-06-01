@@ -235,7 +235,7 @@ export function TimelineLayout({
           >
             {/* 时间线标题 - 增加 top 偏移并支持收缩展开 */}
             <div 
-              className="flex items-center gap-3 sticky top-[var(--header-offset,160px)] bg-background/95 backdrop-blur-md z-50 py-3 -mx-4 px-4 border-b border-border/30 cursor-pointer hover:bg-muted/30 transition-colors"
+              className="flex items-center gap-3 sticky top-[var(--header-offset,160px)] bg-background backdrop-blur-md z-[100] py-3 -mx-4 px-4 border-b border-border/30 cursor-pointer hover:bg-muted/30 transition-colors shadow-md"
               onClick={() => toggleGroup(group.date)}
             >
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
