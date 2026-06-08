@@ -4,7 +4,7 @@ import { api } from '@/db/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { 
-  Loader2, Image as ImageIcon
+  Loader2, Image as ImageIcon, LayoutGrid, Library
 } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { NativeAd } from '@/components/common/NativeAd';
@@ -19,6 +19,7 @@ import { PullToRefresh } from '@/components/common/PullToRefresh';
 import { AlbumCard } from './albums/components/AlbumCard';
 import { AlbumHeader } from './albums/components/AlbumHeader';
 import { AlbumRequestDialog } from './albums/components/AlbumRequestDialog';
+import { BookshelfView } from './albums/components/BookshelfView';
 
 export default function Albums() {
   const [albums, setAlbums] = useState<PhotoAlbum[]>([]);
@@ -31,6 +32,7 @@ export default function Albums() {
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
   const [viewType, setViewType] = useState<'public' | 'joined'>('public');
+  const [displayMode, setDisplayMode] = useState<'grid' | 'bookshelf'>('grid');
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
   const limit = 20;
   const { profile, openLoginDialog } = useAuth();
@@ -260,7 +262,7 @@ export default function Albums() {
       />
 
       <main className="max-w-7xl mx-auto p-4 md:p-6 pb-24">
-        <div className="flex items-center justify-center mb-8">
+        <div className="flex items-center justify-center mb-8 gap-4 flex-wrap">
           <div className="bg-muted/50 backdrop-blur-sm p-1 rounded-2xl flex gap-1 border border-border/40">
             <Button 
               variant={viewType === 'public' ? 'default' : 'ghost'} 
@@ -285,6 +287,29 @@ export default function Albums() {
               我的收藏
             </Button>
           </div>
+
+          {viewType === 'public' && (
+            <div className="bg-muted/50 backdrop-blur-sm p-1 rounded-2xl flex gap-1 border border-border/40">
+              <Button
+                variant={displayMode === 'grid' ? 'secondary' : 'ghost'}
+                size="sm"
+                className={cn("rounded-xl h-9 w-9 p-0", displayMode === 'grid' && "shadow-md")}
+                onClick={() => setDisplayMode('grid')}
+                title="网格视图"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={displayMode === 'bookshelf' ? 'secondary' : 'ghost'}
+                size="sm"
+                className={cn("rounded-xl h-9 w-9 p-0", displayMode === 'bookshelf' && "shadow-md")}
+                onClick={() => setDisplayMode('bookshelf')}
+                title="书架视图"
+              >
+                <Library className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </div>
 
         <PullToRefresh onRefresh={handleRefresh}>
@@ -313,6 +338,24 @@ export default function Albums() {
                 )}
               </div>
             </div>
+          ) : viewType === 'public' && displayMode === 'bookshelf' ? (
+            <BookshelfView
+              albums={filteredAlbums}
+              hasAccessMap={Object.fromEntries(filteredAlbums.map(a => [a.id, checkHasAccess(a)]))}
+              isPendingMap={Object.fromEntries(filteredAlbums.map(a => [a.id, myRequests.some(r => r.album_id === a.id && r.status === 'pending')]))}
+              onView={(id) => navigate(`/albums/${id}`)}
+              onRequest={(id) => {
+                if (!profile) {
+                  openLoginDialog?.();
+                  return;
+                }
+                setRequestAlbumId(id);
+                setShowRequestModal(true);
+              }}
+              ads={albumAds.map((ad, i) => (
+                <NativeAd key={i} {...ad} className="rounded-[2.5rem]" />
+              ))}
+            />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {filteredAlbums.map((album, i) => {

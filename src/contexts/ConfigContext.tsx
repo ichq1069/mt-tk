@@ -105,17 +105,12 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       // 检测版本更新
       const serverVersion = vData?.value;
       if (serverVersion && serverVersion !== APP_VERSION) {
-        console.log(`[ConfigProvider] 检测到新版本: ${serverVersion}, 当前版本: ${APP_VERSION}. 准备更新...`);
-        // 存储标记，避免无限重刷
-        const lastUpdate = localStorage.getItem('last_version_update');
-        const now = Date.now();
-        if (!lastUpdate || (now - Number(lastUpdate) > 60000)) { // 1分钟内不重复重刷
-          localStorage.setItem('last_version_update', String(now));
-          toast.info('检测到系统有新版本，正在自动为您刷新页面...', { duration: 3000 });
-          setTimeout(() => {
-            window.location.reload();
-          }, 2000);
-          return;
+        console.log(`[ConfigProvider] 检测到新版本: ${serverVersion}, 当前版本: ${APP_VERSION}.`);
+        // 使用 sessionStorage 避免同一页面生命周期内重复提示
+        const checkedKey = `version_checked_${serverVersion}`;
+        if (!sessionStorage.getItem(checkedKey)) {
+          sessionStorage.setItem(checkedKey, 'true');
+          toast.info('检测到系统有新版本，建议刷新页面获取最新体验', { duration: 3000 });
         }
       }
       

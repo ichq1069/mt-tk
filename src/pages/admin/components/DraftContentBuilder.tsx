@@ -93,6 +93,7 @@ export function DraftContentBuilder({
   const [mediaPage, setMediaPage] = useState(0);
   const [mediaTotal, setMediaTotal] = useState(0);
   const [mediaItems, setMediaItems] = useState<any[]>([]);
+  const [mediaSortOrder, setMediaSortOrder] = useState<'asc' | 'desc'>('desc');
   const [bigMultiConfig, setBigMultiConfig] = useState<any>({});
   const [uploading, setUploading] = useState(false);
   const [storageConfig, setStorageConfig] = useState<any>(null);
@@ -1028,6 +1029,14 @@ export function DraftContentBuilder({
                 />
               </div>
               <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-[10px] px-2"
+                  onClick={() => setMediaSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+                >
+                  {mediaSortOrder === 'desc' ? '↓ 倒序' : '↑ 正序'}
+                </Button>
                 <Label className="text-[10px] whitespace-nowrap">每页：</Label>
                 <Select value={mediaLimit.toString()} onValueChange={(v) => { setMediaLimit(parseInt(v)); setMediaPage(0); }}>
                   <SelectTrigger className="w-[70px] h-8 text-[10px]">
@@ -1053,7 +1062,11 @@ export function DraftContentBuilder({
               </div>
             ) : (
               <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
-                {mediaItems.map(item => {
+                {[...mediaItems].sort((a, b) => {
+                  const timeA = new Date(a.created_at || 0).getTime();
+                  const timeB = new Date(b.created_at || 0).getTime();
+                  return mediaSortOrder === 'desc' ? timeB - timeA : timeA - timeB;
+                }).map(item => {
                   const isSelected = selectedMedia.some(m => m.id === item.id);
                   const selectedIndex = selectedMedia.findIndex(m => m.id === item.id);
                   return (
@@ -1585,7 +1598,7 @@ function PhoneWallpaperEditor({ block, allBlocks = [], onChange, configId, openM
 
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const generatedImages = [];
+      const generatedImages: { id: string; url: string }[] = [];
       const hiddenContainer = document.createElement('div');
       hiddenContainer.style.position = 'fixed';
       hiddenContainer.style.left = '-9999px';
@@ -1594,20 +1607,17 @@ function PhoneWallpaperEditor({ block, allBlocks = [], onChange, configId, openM
       hiddenContainer.style.background = 'none';
       document.body.appendChild(hiddenContainer);
 
-      for (let i = 0; i < wallpapers.length; i++) {
-        const url = wallpapers[i];
-        if (!url) continue;
+      // 并行构建每张图的 DOM 并等待图片加载
+      const buildTasks = wallpapers.map(async (url, i) => {
+        if (!url) return null;
 
-        // 预加载并转换图片为 Data URL 以解决跨域问题
         console.log(`[PhoneWallpaper] 正在处理第 ${i+1} 张图片:`, url);
         const corsSafeUrl = await imageUrlToDataUrl(url);
 
-        // 创建外层包装器（带边距，模型外透明）
         const outerWrapper = document.createElement('div');
         Object.assign(outerWrapper.style, styles.outerWrapper);
         outerWrapper.style.backgroundColor = 'transparent';
         
-        // 创建手机模型容器 (外壳带边框)
         const tempEl = document.createElement('div');
         Object.assign(tempEl.style, styles.container);
         tempEl.style.width = typeof styles.container.maxWidth === 'number' ? `${styles.container.maxWidth}px` : styles.container.maxWidth;
@@ -1616,21 +1626,17 @@ function PhoneWallpaperEditor({ block, allBlocks = [], onChange, configId, openM
         tempEl.style.zIndex = '1';
         tempEl.style.backgroundColor = 'transparent';
         
-        // 内部包装器 (内容区域，无边框)
         const inner = document.createElement('div');
         inner.style.position = 'absolute';
         inner.style.inset = '0';
         inner.style.overflow = 'hidden';
-        // 确保内部也是白底
         inner.style.backgroundColor = (phoneBgColor === 'transparent' || !phoneBgColor) ? '#ffffff' : phoneBgColor;
-        // 圆角需略小于外壳以防止边缘露出
         inner.style.borderRadius = (phoneModel === 'iphone' || phoneModel === 'android' || phoneModel === 'foldable') ? '2.1rem' : (phoneModel === 'ipad' ? '1.2rem' : '0.25rem');
         
         const img = document.createElement('img');
         img.crossOrigin = 'anonymous';
-        // 使用 Promise 等待图片加载完成
-        const imageLoadPromise = new Promise((resolve, reject) => {
-          img.onload = resolve;
+        const imageLoadPromise = new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
           img.onerror = () => {
             console.error('[PhoneWallpaper] 图片加载失败 (img.onerror):', corsSafeUrl);
             reject(new Error('图片加载失败'));
@@ -1641,7 +1647,6 @@ function PhoneWallpaperEditor({ block, allBlocks = [], onChange, configId, openM
         inner.appendChild(img);
 
         if (phoneModel === 'iphone' || phoneModel === 'android' || phoneModel === 'foldable') {
-          // 状态栏
           const statusBar = document.createElement('div');
           Object.assign(statusBar.style, styles.statusBar);
           
@@ -1649,33 +1654,28 @@ function PhoneWallpaperEditor({ block, allBlocks = [], onChange, configId, openM
           Object.assign(statusLeft.style, styles.statusLeft);
           statusLeft.innerHTML = `<span style="font-size: ${operatorFontSize}px; display: inline-block; transform: ${operatorFontSize < 10 ? `scale(${operatorFontSize / 10})` : 'none'}; transform-origin: left center;">${operatorName}</span>`;
           
-    const statusRight = document.createElement('div');
-    Object.assign(statusRight.style, styles.statusRight);
-    
-    // 计算缩放比例，以 11px 为基准
-    const iconScale = statusIconSize / 11;
-    
-    statusRight.innerHTML = `
-      <div style="display: flex; align-items: flex-end; gap: ${1.2 * iconScale}px; height: ${7 * iconScale}px; margin-right: ${1 * iconScale}px;">
-        <div style="width: ${1.8 * iconScale}px; height: ${2.5 * iconScale}px; background-color: #ffffff; border-radius: ${0.3 * iconScale}px;"></div>
-        <div style="width: ${1.8 * iconScale}px; height: ${4 * iconScale}px; background-color: #ffffff; border-radius: ${0.3 * iconScale}px;"></div>
-        <div style="width: ${1.8 * iconScale}px; height: ${5.5 * iconScale}px; background-color: #ffffff; border-radius: ${0.3 * iconScale}px;"></div>
-        <div style="width: ${1.8 * iconScale}px; height: ${7 * iconScale}px; background-color: #ffffff; border-radius: ${0.3 * iconScale}px;"></div>
-      </div>
-      <svg viewBox="0 0 24 24" style="width: ${statusIconSize}px; height: ${statusIconSize}px; fill: #ffffff; margin-right: ${1 * iconScale}px; transform: ${statusIconSize < 8 ? `scale(${statusIconSize / 8})` : 'none'}; transform-origin: center center;">
-        <path d="M12,21L15.6,16.2C14.6,15.45 13.35,15 12,15C10.65,15 9.4,15.45 8.4,16.2L12,21M12,2C5.97,2 1,6.97 1,13C1,16.03 2.22,18.77 4.22,20.78L12,11L19.78,20.78C21.78,18.77 23,16.03 23,13C23,6.97 18.03,2 12,2Z" />
-      </svg>
-      <div style="width: ${18 * iconScale}px; height: ${8.5 * iconScale}px; border: ${1 * iconScale}px solid rgba(255,255,255,0.4); border-radius: ${2 * iconScale}px; position: relative; padding: ${1 * iconScale}px; transform-origin: right center;">
-        <div style="width: 85%; height: 100%; background-color: #ffffff; border-radius: ${0.5 * iconScale}px;"></div>
-        <div style="width: ${1.5 * iconScale}px; height: ${3.5 * iconScale}px; background-color: rgba(255,255,255,0.4); position: absolute; right: ${-2.8 * iconScale}px; top: 50%; transform: translateY(-50%); border-top-right-radius: ${0.8 * iconScale}px; border-bottom-right-radius: ${0.8 * iconScale}px;"></div>
-      </div>
-    `;
-          
+          const statusRight = document.createElement('div');
+          Object.assign(statusRight.style, styles.statusRight);
+          const iconScale = statusIconSize / 11;
+          statusRight.innerHTML = `
+            <div style="display: flex; align-items: flex-end; gap: ${1.2 * iconScale}px; height: ${7 * iconScale}px; margin-right: ${1 * iconScale}px;">
+              <div style="width: ${1.8 * iconScale}px; height: ${2.5 * iconScale}px; background-color: #ffffff; border-radius: ${0.3 * iconScale}px;"></div>
+              <div style="width: ${1.8 * iconScale}px; height: ${4 * iconScale}px; background-color: #ffffff; border-radius: ${0.3 * iconScale}px;"></div>
+              <div style="width: ${1.8 * iconScale}px; height: ${5.5 * iconScale}px; background-color: #ffffff; border-radius: ${0.3 * iconScale}px;"></div>
+              <div style="width: ${1.8 * iconScale}px; height: ${7 * iconScale}px; background-color: #ffffff; border-radius: ${0.3 * iconScale}px;"></div>
+            </div>
+            <svg viewBox="0 0 24 24" style="width: ${statusIconSize}px; height: ${statusIconSize}px; fill: #ffffff; margin-right: ${1 * iconScale}px; transform: ${statusIconSize < 8 ? `scale(${statusIconSize / 8})` : 'none'}; transform-origin: center center;">
+              <path d="M12,21L15.6,16.2C14.6,15.45 13.35,15 12,15C10.65,15 9.4,15.45 8.4,16.2L12,21M12,2C5.97,2 1,6.97 1,13C1,16.03 2.22,18.77 4.22,20.78L12,11L19.78,20.78C21.78,18.77 23,16.03 23,13C23,6.97 18.03,2 12,2Z" />
+            </svg>
+            <div style="width: ${18 * iconScale}px; height: ${8.5 * iconScale}px; border: ${1 * iconScale}px solid rgba(255,255,255,0.4); border-radius: ${2 * iconScale}px; position: relative; padding: ${1 * iconScale}px; transform-origin: right center;">
+              <div style="width: 85%; height: 100%; background-color: #ffffff; border-radius: ${0.5 * iconScale}px;"></div>
+              <div style="width: ${1.5 * iconScale}px; height: ${3.5 * iconScale}px; background-color: rgba(255,255,255,0.4); position: absolute; right: ${-2.8 * iconScale}px; top: 50%; transform: translateY(-50%); border-top-right-radius: ${0.8 * iconScale}px; border-bottom-right-radius: ${0.8 * iconScale}px;"></div>
+            </div>
+          `;
           statusBar.appendChild(statusLeft);
           statusBar.appendChild(statusRight);
           inner.appendChild(statusBar);
 
-          // 刘海 (根据机型适配灵动岛)
           const notch = document.createElement('div');
           Object.assign(notch.style, styles.notch);
           if (phoneModel === 'iphone') {
@@ -1685,13 +1685,11 @@ function PhoneWallpaperEditor({ block, allBlocks = [], onChange, configId, openM
           }
           inner.appendChild(notch);
 
-          // 锁屏内容 (参考图样式优化)
           const lockContent = document.createElement('div');
           Object.assign(lockContent.style, styles.lockContent);
           lockContent.innerHTML = `
             <div style="font-size: ${lockDateFontSize}px; font-weight: 500; margin-bottom: 1px; letter-spacing: 0.1px; transform: ${lockDateFontSize < 10 ? `scale(${lockDateFontSize / 10})` : 'none'}; transform-origin: center center;">${lockDate}</div>
             <div style="font-size: ${lockTimeFontSize}px; font-weight: 700; line-height: 1; letter-spacing: -1px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; transform: ${lockTimeFontSize < 20 ? `scale(${lockTimeFontSize / 20})` : 'none'}; transform-origin: center center;">${lockTime}</div>
-            
             <div style="margin-top: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 20px; width: 100%;">
               <div style="display: flex; align-items: center; width: 100%; max-width: 140px; gap: 8px;">
                 <div style="flex: 1;">
@@ -1710,15 +1708,12 @@ function PhoneWallpaperEditor({ block, allBlocks = [], onChange, configId, openM
           `;
           inner.appendChild(lockContent);
 
-          // 底部按钮
           const bottomActions = document.createElement('div');
           Object.assign(bottomActions.style, styles.bottomActions);
           bottomActions.style.bottom = '36px';
-          
           const bIconScale = bottomIconSize / 16;
           const bCircleSize = 36 * bIconScale;
           const bIconSvgSize = bottomIconSize;
-
           bottomActions.innerHTML = `
             <div style="width: ${bCircleSize}px; height: ${bCircleSize}px; border-radius: 50%; background-color: rgba(0,0,0,0.3); backdrop-filter: blur(15px); border: 0.5px solid rgba(255,255,255,0.1); display: flex; justify-content: center; align-items: center;">
               <svg viewBox="0 0 24 24" style="width: ${bIconSvgSize}px; height: ${bIconSvgSize}px; fill: #ffffff;"><path d="M12 2C10.9 2 10 2.9 10 4V12.18C8.84 12.59 8 13.7 8 15C8 16.66 9.34 18 11 18V22H13V18C14.66 18 16 16.66 16 15C16 13.7 15.16 12.59 14 12.18V4C14 2.9 13.1 2 12 2M11 15C11 14.45 11.45 14 12 14S13 14.45 13 15 12.55 16 12 16 11 15.55 11 15Z" /></svg>
@@ -1744,59 +1739,76 @@ function PhoneWallpaperEditor({ block, allBlocks = [], onChange, configId, openM
         outerWrapper.appendChild(tempEl);
         hiddenContainer.appendChild(outerWrapper);
 
-        // 等待图片加载和一些额外的渲染时间
+        // 等待图片加载
         try {
           await imageLoadPromise;
-          // 图片加载后，再等一下确保 DOM 渲染完成，增加到 1000ms 以提高成功率
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 600));
         } catch (e) {
           console.error('[PhoneWallpaper] 图片加载失败:', url);
-          throw new Error(`第 ${i+1} 张图片加载失败，请检查链接是否有效`);
+          hiddenContainer.removeChild(outerWrapper);
+          return { index: i, error: `第 ${i+1} 张图片加载失败` };
         }
 
-        console.log(`[PhoneWallpaper] 开始生成第 ${i+1}/${wallpapers.length} 张图片...`);
-        const dataUrl = await toPng(outerWrapper, {
-          quality: 1,
-          pixelRatio: 2,
-          skipFonts: true,
-          backgroundColor: 'transparent',
-          style: {
+        return { index: i, outerWrapper };
+      });
+
+      // 并行等待所有 DOM 构建和图片加载
+      const buildResults = await Promise.all(buildTasks);
+
+      // 串行生成截图（html-to-image 依赖 DOM 状态，逐个捕获以避免竞争）
+      for (const result of buildResults) {
+        if (!result) continue;
+        if ('error' in result) {
+          console.warn(`[PhoneWallpaper] 跳过第 ${result.index + 1} 张:`, result.error);
+          continue;
+        }
+        const { index: i, outerWrapper } = result;
+
+        try {
+          console.log(`[PhoneWallpaper] 开始生成第 ${i+1}/${wallpapers.length} 张图片...`);
+          const dataUrl = await toPng(outerWrapper, {
+            quality: 1,
+            pixelRatio: 2,
+            skipFonts: true,
             backgroundColor: 'transparent',
-            background: 'none',
-            padding: '40px 20px', 
-          }
-        });
-
-        if (!dataUrl || dataUrl.length < 2000) {
-          console.error(`[PhoneWallpaper] 第 ${i+1} 张图片生成内容无效 (长度: ${dataUrl?.length})`);
-          throw new Error(`第 ${i+1} 张图片内容生成失败，请尝试刷新页面重试`);
-        }
-
-        const blob = dataURLtoBlob(dataUrl);
-        const fileName = `phone-wallpaper-${Date.now()}-${i}.png`;
-        const file = new File([blob], fileName, { type: 'image/png' });
-
-        console.log(`[PhoneWallpaper] 开始上传第 ${i+1} 张图片...`);
-        const uploadRes = await uploadToStorage({
-          file,
-          path: `drafts/${fileName}`,
-          storageConfig: storageConfig
-        });
-
-        if (uploadRes?.url) {
-          console.log(`[PhoneWallpaper] 第 ${i+1} 张图片上传成功:`, uploadRes.url);
-          // 添加时间戳查询参数以强制浏览器刷新图片缓存
-          const timestampedUrl = `${uploadRes.url}${uploadRes.url.includes('?') ? '&' : '?'}t=${Date.now()}`;
-          generatedImages.push({
-            id: Math.random().toString(36).substr(2, 9),
-            url: timestampedUrl
+            style: {
+              backgroundColor: 'transparent',
+              background: 'none',
+              padding: '40px 20px',
+            }
           });
-        } else {
-          console.error(`[PhoneWallpaper] 第 ${i+1} 张图片上传失败:`, uploadRes?.error);
-          throw new Error(`第 ${i+1} 张图片上传失败: ${uploadRes?.error || 'Worker/R2 存储上传失败，请检查存储配置是否正确，或尝试切换为 Supabase 优先模式'}`);
+
+          if (!dataUrl || dataUrl.length < 2000) {
+            console.error(`[PhoneWallpaper] 第 ${i+1} 张内容无效 (长度: ${dataUrl?.length})`);
+            toast.warning(`第 ${i+1} 张图片生成内容无效，已跳过`);
+            continue;
+          }
+
+          const blob = dataURLtoBlob(dataUrl);
+          const fileName = `phone-wallpaper-${Date.now()}-${i}.png`;
+          const file = new File([blob], fileName, { type: 'image/png' });
+
+          console.log(`[PhoneWallpaper] 开始上传第 ${i+1} 张图片...`);
+          const uploadRes = await uploadToStorage({
+            file,
+            path: `drafts/${fileName}`,
+            storageConfig: storageConfig
+          });
+
+          if (uploadRes?.url) {
+            console.log(`[PhoneWallpaper] 第 ${i+1} 张上传成功:`, uploadRes.url);
+            const timestampedUrl = `${uploadRes.url}${uploadRes.url.includes('?') ? '&' : '?'}t=${Date.now()}`;
+            generatedImages.push({ id: Math.random().toString(36).substr(2, 9), url: timestampedUrl });
+          } else {
+            console.error(`[PhoneWallpaper] 第 ${i+1} 张上传失败:`, uploadRes?.error);
+            toast.warning(`第 ${i+1} 张图片上传失败，已跳过: ${uploadRes?.error || '存储错误'}`);
+          }
+        } catch (err: any) {
+          console.error(`[PhoneWallpaper] 第 ${i+1} 张处理异常，已跳过:`, err);
+          toast.warning(`第 ${i+1} 张处理失败，已跳过`);
+        } finally {
+          try { hiddenContainer.removeChild(outerWrapper); } catch (_) {}
         }
-        
-        hiddenContainer.removeChild(outerWrapper);
       }
 
       console.log('[PhoneWallpaper] 所有图片生成完成，共:', generatedImages.length);

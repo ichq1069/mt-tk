@@ -34,44 +34,56 @@ const SlicedImage = ({
     if (urls.length === 0) return;
     let active = true;
     if (urls.length === 1) {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.referrerPolicy = 'no-referrer';
-      img.onload = () => {
-        if (!active) return;
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+      const tryLoadImage = (useCors: boolean) => {
+        const img = new Image();
+        if (useCors) img.crossOrigin = 'anonymous';
+        img.referrerPolicy = 'no-referrer';
+        img.onload = () => {
+          if (!active) return;
+          const canvas = canvasRef.current;
+          if (!canvas) return;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
 
-        const w = img.naturalWidth;
-        const h = img.naturalHeight;
-        canvas.width = w;
-        canvas.height = h;
+          const w = img.naturalWidth;
+          const h = img.naturalHeight;
+          canvas.width = w;
+          canvas.height = h;
 
-        if (mode === 'canvas') {
-          // 完整绘制
-          ctx.drawImage(img, 0, 0, w, h);
-        } else {
-          // 在单个 Canvas 内部进行分片绘制，消除 DOM 间隙
-          const leftWidth = Math.floor(w / 2);
-          const rightWidth = w - leftWidth;
-          const topHeight = Math.floor(h / 2);
-          const bottomHeight = h - topHeight;
+          if (mode === 'canvas') {
+            // 完整绘制
+            ctx.drawImage(img, 0, 0, w, h);
+          } else {
+            // 在单个 Canvas 内部进行分片绘制，消除 DOM 间隙
+            const leftWidth = Math.floor(w / 2);
+            const rightWidth = w - leftWidth;
+            const topHeight = Math.floor(h / 2);
+            const bottomHeight = h - topHeight;
 
-          // 绘制左上
-          ctx.drawImage(img, 0, 0, leftWidth, topHeight, 0, 0, leftWidth, topHeight);
-          // 绘制右上
-          ctx.drawImage(img, leftWidth, 0, rightWidth, topHeight, leftWidth, 0, rightWidth, topHeight);
-          // 绘制左下
-          ctx.drawImage(img, 0, topHeight, leftWidth, bottomHeight, 0, topHeight, leftWidth, bottomHeight);
-          // 绘制右下
-          ctx.drawImage(img, leftWidth, topHeight, rightWidth, bottomHeight, leftWidth, topHeight, rightWidth, bottomHeight);
-        }
-        onLoad?.();
+            // 绘制左上
+            ctx.drawImage(img, 0, 0, leftWidth, topHeight, 0, 0, leftWidth, topHeight);
+            // 绘制右上
+            ctx.drawImage(img, leftWidth, 0, rightWidth, topHeight, leftWidth, 0, rightWidth, topHeight);
+            // 绘制左下
+            ctx.drawImage(img, 0, topHeight, leftWidth, bottomHeight, 0, topHeight, leftWidth, bottomHeight);
+            // 绘制右下
+            ctx.drawImage(img, leftWidth, topHeight, rightWidth, bottomHeight, leftWidth, topHeight, rightWidth, bottomHeight);
+          }
+          onLoad?.();
+        };
+        img.onerror = () => {
+          if (!active) return;
+          if (useCors) {
+            console.warn('[SlicedImage] CORS load failed, retrying without crossOrigin:', urls[0]);
+            tryLoadImage(false);
+          } else {
+            console.error('[SlicedImage] Image load failed:', urls[0]);
+            onError?.();
+          }
+        };
+        img.src = urls[0];
       };
-      img.onerror = () => { if (active) onError?.(); };
-      img.src = urls[0];
+      tryLoadImage(true);
       return () => { active = false; };
     }
     return () => { active = false; };

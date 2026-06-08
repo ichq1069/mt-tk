@@ -52,11 +52,9 @@ export const MusicProvider: FC<{ children: ReactNode }> = ({ children }) => {
           nextMusic();
         } else {
           setIsMusicPlaying(false);
-          // 只有在用户主动尝试播放时才报错，避免页面加载时静默报错干扰
+          // 静默处理加载失败，不在前端提示
           if (audioRef.current?.src) {
-            toast.error('背景音乐加载失败，请检查链接是否有效', {
-              description: src?.substring(0, 50) + '...'
-            });
+            console.warn('[Music] 背景音乐加载失败:', src?.substring(0, 50));
           }
         }
       };
