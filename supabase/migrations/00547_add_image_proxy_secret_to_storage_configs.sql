@@ -1,0 +1,1 @@
+ALTER TABLE storage_configs ADD COLUMN IF NOT EXISTS image_proxy_secret text;

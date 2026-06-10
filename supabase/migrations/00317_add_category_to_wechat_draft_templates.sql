@@ -1,0 +1,2 @@
+ALTER TABLE wechat_draft_templates ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'other' CHECK (category IN ('header', 'body', 'footer', 'other'));
+COMMENT ON COLUMN wechat_draft_templates.category IS '模板类别：header-头部, body-正文, footer-尾部, other-其他';

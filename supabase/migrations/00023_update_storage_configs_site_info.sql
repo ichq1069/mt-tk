@@ -1,0 +1,5 @@
+ALTER TABLE storage_configs 
+ADD COLUMN IF NOT EXISTS site_title TEXT DEFAULT '视觉赏析',
+ADD COLUMN IF NOT EXISTS site_logo TEXT,
+ADD COLUMN IF NOT EXISTS site_description TEXT DEFAULT '全站最美的视觉内容聚合平台',
+ADD COLUMN IF NOT EXISTS wechat_only BOOLEAN DEFAULT FALSE;

@@ -1,0 +1,1 @@
+ALTER TABLE miniprogram_configs ADD COLUMN page_path TEXT DEFAULT 'pages/index/index';

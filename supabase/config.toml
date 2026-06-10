@@ -1,0 +1,89 @@
+[auth.email]
+enable_confirmations = false
+
+[functions."admin-api-gateway"]
+verify_jwt = false
+
+[functions."admin-auth-action"]
+verify_jwt = false
+
+[functions."auth-sms"]
+verify_jwt = false
+
+[functions."batch-import"]
+verify_jwt = false
+
+[functions."cache-manager"]
+verify_jwt = false
+
+[functions."calculate-media-heat"]
+verify_jwt = false
+
+[functions."check-in"]
+verify_jwt = false
+
+[functions."create-user-manually"]
+verify_jwt = false
+
+[functions."delete-user"]
+verify_jwt = false
+
+[functions."generate-album-pdf"]
+verify_jwt = false
+
+[functions."generate-thumbnail"]
+verify_jwt = false
+
+[functions."get-ip-info"]
+verify_jwt = false
+
+[functions."get-server-ip"]
+verify_jwt = false
+
+[functions."image-dedupe"]
+verify_jwt = false
+
+[functions."image-optimizer"]
+verify_jwt = false
+
+[functions."report-anti-screenshot"]
+verify_jwt = false
+
+[functions."send-email"]
+verify_jwt = false
+
+[functions."test-r2-connection"]
+verify_jwt = false
+
+[functions."upload-to-r2"]
+verify_jwt = false
+
+[functions."web-vitals-collector"]
+verify_jwt = false
+
+[functions."wechat-api"]
+verify_jwt = false
+
+[functions."wechat-callback"]
+verify_jwt = false
+
+[functions."wechat-sync-fans"]
+verify_jwt = false
+
+[functions."wechat-test-connection"]
+verify_jwt = false
+
+[functions."daily-gallery-publish"]
+verify_jwt = false
+
+[functions."daily-gallery-scheduler"]
+verify_jwt = false
+
+[functions."daily-gallery-verify"]
+verify_jwt = false
+
+[functions."wechat-notifications"]
+verify_jwt = false
+
+[functions."wechat-qr"]
+verify_jwt = false

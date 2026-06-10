@@ -1,0 +1,106 @@
+[wechat-callback]
+verify_jwt = false
+
+[wechat-test-connection]
+verify_jwt = false
+
+[wechat-api]
+verify_jwt = false
+
+[wechat-sync-fans]
+verify_jwt = false
+
+[admin-auth-action]
+verify_jwt = false
+
+[admin-api-gateway]
+verify_jwt = false
+
+[auth-sms]
+verify_jwt = false
+
+[batch-import]
+verify_jwt = false
+
+[cache-manager]
+verify_jwt = false
+
+[calculate-media-heat]
+verify_jwt = false
+
+[check-in]
+verify_jwt = false
+
+[create-user-manually]
+verify_jwt = false
+
+[delete-user]
+verify_jwt = false
+
+[generate-album-pdf]
+verify_jwt = false
+
+[generate-thumbnail]
+verify_jwt = false
+
+[get-ip-info]
+verify_jwt = false
+
+[get-server-ip]
+verify_jwt = false
+
+[image-dedupe]
+verify_jwt = false
+
+[image-optimizer]
+verify_jwt = false
+
+[report-anti-screenshot]
+verify_jwt = false
+
+[send-email]
+verify_jwt = false
+
+[test-r2-connection]
+verify_jwt = false
+
+[upload-to-r2]
+verify_jwt = false
+
+[web-vitals-collector]
+verify_jwt = false
+
+[daily-gallery-publish]
+verify_jwt = false
+
+[daily-gallery-scheduler]
+verify_jwt = false
+
+[daily-gallery-verify]
+verify_jwt = false
+
+[wechat-notifications]
+verify_jwt = false
+
+[wechat-qr]
+verify_jwt = false
+
+[wechat-miniprogram]
+verify_jwt = false
+
+[app-auth]
+verify_jwt = false
+
+
+[app-user]
+verify_jwt = false
+
+[app-media]
+verify_jwt = false
+
+[app-albums]
+verify_jwt = false
+
+[app-categories]
+verify_jwt = false
+

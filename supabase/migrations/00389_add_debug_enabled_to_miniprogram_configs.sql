@@ -1,0 +1,1 @@
+ALTER TABLE miniprogram_configs ADD COLUMN IF NOT EXISTS is_debug_enabled BOOLEAN DEFAULT false;

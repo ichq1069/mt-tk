@@ -1,0 +1,1 @@
+ALTER TABLE ad_unlock_logs DROP CONSTRAINT IF EXISTS ad_unlock_logs_item_unlock_openid_unique;

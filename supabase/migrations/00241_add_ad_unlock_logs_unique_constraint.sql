@@ -1,0 +1,1 @@
+ALTER TABLE ad_unlock_logs ADD CONSTRAINT ad_unlock_logs_item_unlock_openid_unique UNIQUE (item_id, unlock_type, openid);

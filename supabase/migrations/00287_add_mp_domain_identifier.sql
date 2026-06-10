@@ -1,0 +1,1 @@
+ALTER TABLE storage_configs ADD COLUMN mp_domain_identifier text DEFAULT 'miaoda';

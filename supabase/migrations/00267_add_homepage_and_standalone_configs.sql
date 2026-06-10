@@ -1,0 +1,3 @@
+ALTER TABLE storage_configs 
+ADD COLUMN IF NOT EXISTS homepage_path TEXT DEFAULT '/',
+ADD COLUMN IF NOT EXISTS standalone_paths TEXT[] DEFAULT ARRAY[]::TEXT[];

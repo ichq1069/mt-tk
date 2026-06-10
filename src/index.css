@@ -1,0 +1,253 @@
+/* stylelint-disable */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer base {
+  html, body {
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  :root {
+    --radius: 1rem;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+    --destructive-foreground: 210 40% 98%;
+    --rainbow-red: 0 84% 60%;
+    --rainbow-orange: 24 94% 53%;
+    --rainbow-amber: 38 92% 50%;
+    --rainbow-emerald: 142 70% 45%;
+    --rainbow-cyan: 189 94% 43%;
+    --rainbow-blue: 221 83% 53%;
+    --rainbow-indigo: 239 84% 67%;
+    --rainbow-violet: 262 83% 58%;
+    --rainbow-fuchsia: 292 84% 61%;
+    --rainbow-pink: 330 81% 60%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --rainbow-red: 0 84% 60%;
+    --rainbow-orange: 24 94% 53%;
+    --rainbow-amber: 38 92% 50%;
+    --rainbow-emerald: 142 70% 45%;
+    --rainbow-cyan: 189 94% 43%;
+    --rainbow-blue: 221 83% 53%;
+    --rainbow-indigo: 239 84% 67%;
+    --rainbow-violet: 262 83% 58%;
+    --rainbow-fuchsia: 292 84% 61%;
+    --rainbow-pink: 330 81% 60%;
+
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+    --destructive-foreground: 210 40% 98%;
+  }
+}
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    touch-action: pan-y; /* 禁止全局横向滑动，仅允许垂直方向 */
+    font-display: swap; /* 优化字体加载，防止 CLS */
+  }
+
+  /* 针对所有文本元素应用字体交换策略 */
+  * {
+    font-display: swap !important;
+  }
+
+  img {
+    user-select: auto !important; /* 允许图片长按保存 */
+    -webkit-user-drag: none;
+  }
+}
+
+@layer utilities {
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--chart-2)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+  @keyframes progress {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .animate-progress {
+    animation: progress 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse-slow {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.9;
+      transform: scale(1.02);
+    }
+  }
+  .animate-pulse-slow {
+    animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .pc-admin-fullscreen,
+  .pc-admin-fullscreen #root {
+    max-width: none !important;
+    width: 100vw !important;
+    min-height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+    position: static !important;
+    z-index: auto !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .pc-admin-fullscreen [class*="md-h5-iframe"],
+  .pc-admin-fullscreen [class*="miaoda-h5-iframe"] {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 99999 !important;
+  }
+
+  /* 核心修复：确保 Radix UI 所有的 Portal (弹窗、下拉菜单等) 具有最高层级 */
+  [data-radix-portal] {
+    z-index: 100000 !important;
+  }
+
+  /* 基础弹窗：Dialog */
+  div[role="dialog"] {
+    z-index: 110000 !important;
+  }
+
+  /* 确认弹窗：AlertDialog，必须高于普通弹窗 */
+  div[role="alertdialog"] {
+    z-index: 110100 !important;
+  }
+
+  /* 悬浮组件内容：Select, Popover, Tooltip 等在 Portal 中的内容 */
+  [data-radix-select-viewport], 
+  [role="listbox"],
+  .z-popover,
+  [data-radix-popper-content-wrapper] {
+    z-index: 110200 !important;
+  }
+
+  /* 预览大图层级必须最高 */
+  .z-preview {
+    z-index: 120000 !important;
+  }
+
+  /* Quill Editor Alignment Styles */
+  .ql-align-center { text-align: center; }
+  .ql-align-right { text-align: right; }
+  .ql-align-justify { text-align: justify; }
+  .prose .ql-align-center { text-align: center; }
+  .prose .ql-align-right { text-align: right; }
+  .prose .ql-align-justify { text-align: justify; }
+
+  /* 修复 DialogContent 的定位和可见性 */
+
+  /* 解决 React Quill 重复工具栏问题 */
+  .ql-toolbar + .ql-toolbar {
+    display: none !important;
+  }
+
+
+@layer utilities {
+  .mesh-gradient {
+    background-color: hsl(var(--background));
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(var(--primary) / 0.1) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(var(--accent) / 0.1) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(var(--primary) / 0.05) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(var(--accent) / 0.1) 0px, transparent 50%);
+  }
+}
+

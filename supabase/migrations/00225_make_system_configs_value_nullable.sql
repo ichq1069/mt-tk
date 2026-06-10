@@ -1,0 +1,1 @@
+ALTER TABLE public.system_configs ALTER COLUMN value DROP NOT NULL;

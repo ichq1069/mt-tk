@@ -1,0 +1,1 @@
+alter table random_beauty_configs drop column if exists daily_gallery_trigger_probability;

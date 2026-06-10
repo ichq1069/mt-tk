@@ -1,0 +1,12 @@
+ALTER FUNCTION public.add_user_exp(p_user_id uuid, p_amount integer, p_reason text, p_type text) SET search_path = public, pg_temp;
+ALTER FUNCTION public.add_user_exp(p_user_id uuid, p_amount integer, p_reason text, p_type text, p_target_id text) SET search_path = public, pg_temp;
+ALTER FUNCTION public.add_user_points(p_user_id uuid, p_amount integer, p_reason text, p_type text) SET search_path = public, pg_temp;
+ALTER FUNCTION public.add_user_points(p_user_id uuid, p_amount integer, p_reason text, p_type text, p_target_id text) SET search_path = public, pg_temp;
+ALTER FUNCTION public.batch_hard_delete_media(p_ids uuid[]) SET search_path = public, pg_temp;
+ALTER FUNCTION public.batch_restore_media(p_ids uuid[]) SET search_path = public, pg_temp;
+ALTER FUNCTION public.get_random_media_items(p_limit integer, p_user_id uuid, p_type text, p_category_id text, p_tag_ids uuid[]) SET search_path = public, pg_temp;
+ALTER FUNCTION public.is_admin(uid uuid) SET search_path = public, pg_temp;
+ALTER FUNCTION public.log_point_changes() SET search_path = public, pg_temp;
+ALTER FUNCTION public.optimize_database() SET search_path = public, pg_temp;
+ALTER FUNCTION public.prune_scheduled_task_logs() SET search_path = public, pg_temp;
+ALTER FUNCTION public.purge_all_deleted_media() SET search_path = public, pg_temp;

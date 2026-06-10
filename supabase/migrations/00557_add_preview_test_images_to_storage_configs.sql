@@ -1,0 +1,1 @@
+ALTER TABLE storage_configs ADD COLUMN IF NOT EXISTS preview_test_images jsonb DEFAULT '[]'::jsonb;

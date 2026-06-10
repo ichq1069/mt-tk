@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS idx_shortcodes_created_at ON shortcodes(created_at DESC);

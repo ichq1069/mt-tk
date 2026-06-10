@@ -1,0 +1,15 @@
+Checked 184 files in 2s. No fixes applied.
+help[button-default-text-primary-contrast]: Default button with text-primary class causes poor contrast. The default variant has a primary-colored background, making text-primary color blend with the background and become hard to read. Remove the text-primary class or specify a different variant like 'outline' or 'ghost'.
+    ┌─ src/components/MediaPreview.tsx:594:19
+    │    
+594 │ ╭ ╭                   <Button
+    │                        ------
+595 │ │ │                     size="icon"
+596 │ │ │                     className="w-12 h-12 rounded-full shadow-2xl bg-primary/20 hover:bg-primary/40 text-primary backdrop-blur-md border border-primary/30 transition-all duration-300"
+    │ │ │                     ------------------------------------------------------------------------------------------------------------------------------------------------------------------
+597 │ │ │                   >
+    │ │ ╰───────────────────'
+598 │ │                       <Settings className="w-6 h-6" />
+599 │ │                     </Button>
+    │ ╰─────────────────────────────^
+

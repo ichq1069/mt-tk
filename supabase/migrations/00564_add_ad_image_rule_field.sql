@@ -1,0 +1,2 @@
+ALTER TABLE ads 
+ADD COLUMN IF NOT EXISTS image_rule TEXT DEFAULT '写-封';

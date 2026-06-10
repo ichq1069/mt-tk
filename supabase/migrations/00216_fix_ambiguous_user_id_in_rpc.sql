@@ -1,0 +1,36 @@
+-- Fix ambiguous user_id reference by qualifying column names or using aliases
+CREATE OR REPLACE FUNCTION public.check_user_sessions_by_identifier(p_identifier text)
+ RETURNS TABLE(user_id uuid, has_active_session boolean, security_status text)
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE
+    target_user_id UUID;
+    v_security_status TEXT;
+BEGIN
+    -- 先根据 identifier 找到 user_id 和 security_status
+    -- 尝试通过 username, email, 或者 mobile 查找
+    SELECT p.id, p.security_status INTO target_user_id, v_security_status
+    FROM public.profiles p
+    WHERE p.username = p_identifier 
+       OR p.email = p_identifier 
+       OR p.mobile = p_identifier
+    LIMIT 1;
+
+    IF target_user_id IS NULL THEN
+        RETURN;
+    END IF;
+
+    -- 返回结果，使用明确的列引用防止歧义
+    RETURN QUERY
+    SELECT 
+        target_user_id,
+        EXISTS (
+            SELECT 1 FROM public.user_active_sessions uas
+            WHERE uas.user_id = target_user_id 
+              AND uas.is_active = TRUE 
+              AND uas.last_ping_at > NOW() - INTERVAL '15 minutes'
+        ),
+        COALESCE(v_security_status, 'normal');
+END;
+$function$;

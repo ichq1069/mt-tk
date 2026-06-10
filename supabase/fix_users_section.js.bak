@@ -1,0 +1,161 @@
+const fs = require('fs');
+const path = '/workspace/app-a8orwhnquio1/src/pages/admin/components/UsersSection.tsx';
+let content = fs.readFileSync(path, 'utf8');
+
+const paginationStart = content.indexOf('{total > limit && (');
+const listTabEnd = content.indexOf(') : activeTab === \'groups\' ? (');
+
+if (paginationStart !== -1 && listTabEnd !== -1) {
+    const before = content.substring(0, paginationStart);
+    const after = content.substring(listTabEnd);
+    
+    const newMiddle = \`
+      {total > limit && (
+        <div className="p-6 border-t flex flex-col md:flex-row items-center justify-between gap-4 bg-white/50">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">每页显示</span>
+            <Select value={String(limit)} onValueChange={(v) => { setLimit(Number(v)); setPage(0); }}>
+              <SelectTrigger className="w-[80px] h-9 rounded-xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)} className="rounded-xl h-9">上一页</Button>
+            <div className="flex items-center gap-1 mx-2">
+              {Array.from({ length: Math.min(5, Math.ceil(total / limit)) }, (_, i) => {
+                const p = i + Math.max(0, Math.min(page - 2, Math.ceil(total / limit) - 5));
+                if (p < 0 || p >= Math.ceil(total / limit)) return null;
+                return (
+                  <Button 
+                    key={p} 
+                    variant={page === p ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setPage(p)}
+                    className="w-9 h-9 rounded-xl p-0"
+                  >
+                    {p + 1}
+                  </Button>
+                );
+              })}
+            </div>
+            <Button variant="outline" size="sm" disabled={(page + 1) * limit >= total} onClick={() => setPage(p => p + 1)} className="rounded-xl h-9">下一页</Button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">跳转至</span>
+            <Input 
+              className="w-14 h-9 rounded-xl text-center" 
+              value={jumpPage} 
+              onChange={(e) => setJumpPage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const p = parseInt(jumpPage) - 1;
+                  if (!isNaN(p) && p >= 0 && p < Math.ceil(total / limit)) {
+                    setPage(p);
+                    setJumpPage('');
+                  }
+                }
+              }}
+            />
+            <span className="text-sm text-muted-foreground whitespace-nowrap text-xs">页 / 共 {Math.ceil(total / limit)} 页</span>
+          </div>
+        </div>
+      )}
+
+      <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+        <DialogContent className="rounded-3xl max-w-md p-8 overflow-hidden border-none shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black">添加新用户</DialogTitle>
+            <DialogDescription>手动创建一个新用户账号</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-5 py-4">
+            <div className="space-y-2">
+              <Label className="text-xs font-bold">用户名 <span className="text-red-500">*</span></Label>
+              <Input 
+                placeholder="3-20个字符" 
+                value={addUserForm.username} 
+                onChange={e => setAddUserForm({...addUserForm, username: e.target.value.trim()})}
+                className="rounded-xl h-11"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs font-bold">初始密码 <span className="text-red-500">*</span></Label>
+              <Input 
+                type="password"
+                placeholder="至少6个字符" 
+                value={addUserForm.password} 
+                onChange={e => setAddUserForm({...addUserForm, password: e.target.value})}
+                className="rounded-xl h-11"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs font-bold">邮箱地址 (可选)</Label>
+              <Input 
+                placeholder="user@example.com" 
+                value={addUserForm.email} 
+                onChange={e => setAddUserForm({...addUserForm, email: e.target.value.trim()})}
+                className="rounded-xl h-11"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs font-bold">用户角色</Label>
+              <Select value={addUserForm.role} onValueChange={val => setAddUserForm({...addUserForm, role: val})}>
+                <SelectTrigger className="rounded-xl h-11 border-slate-200"><SelectValue /></SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  <SelectItem value="user">普通用户</SelectItem>
+                  <SelectItem value="admin">管理员</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {customFields.length > 0 && (
+              <div className="space-y-4 pt-2">
+                <Separator />
+                <h4 className="text-sm font-bold text-muted-foreground flex items-center gap-2">
+                  <DatabaseIcon className="w-4 h-4" /> 自定义资料项
+                </h4>
+                <div className="grid gap-4">
+                  {customFields.map(field => (
+                    <div key={field.id} className="space-y-1.5">
+                      <Label className="text-[11px] font-bold text-slate-500 ml-1">
+                        {field.field_name}
+                        {field.is_required && <span className="text-red-500 ml-0.5">*</span>}
+                      </Label>
+                      <CustomFieldRenderer 
+                        field={field}
+                        value={addUserForm.custom_fields?.[field.field_key]}
+                        onChange={(val) => setAddUserForm((prev) => ({ 
+                          ...prev, 
+                          custom_fields: { ...prev.custom_fields, [field.field_key]: val } 
+                        }))}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter className="pt-4 flex flex-row gap-2">
+            <Button variant="ghost" onClick={() => setIsAddUserOpen(false)} className="flex-1 rounded-xl h-11">取消</Button>
+            <Button onClick={handleAddUser} disabled={isAdding} className="flex-1 rounded-xl h-11 bg-primary font-bold">
+              {isAdding ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
+              立即创建
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+\`;
+    fs.writeFileSync(path, before + newMiddle + after, 'utf8');
+    console.log('Successfully fixed UsersSection.tsx');
+} else {
+    console.error('Could not find markers', { paginationStart, listTabEnd });
+}

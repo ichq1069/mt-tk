@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS album_photos_album_id_url_idx ON public.album_photos (album_id, url);

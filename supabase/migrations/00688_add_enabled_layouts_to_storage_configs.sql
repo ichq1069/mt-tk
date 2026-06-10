@@ -1,0 +1,1 @@
+ALTER TABLE storage_configs ADD COLUMN enabled_layouts text[];

@@ -1,0 +1,1 @@
+ALTER TABLE user_bookmarks ADD COLUMN IF NOT EXISTS remark TEXT;

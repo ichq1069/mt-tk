@@ -1,0 +1,1 @@
+alter table random_beauty_configs add column if not exists allow_guest_access boolean default true;

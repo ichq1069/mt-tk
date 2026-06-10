@@ -1,0 +1,80 @@
+DROP FUNCTION IF EXISTS public.get_daily_gallery_available_images_rpc(integer,integer,text,text);
+
+CREATE OR REPLACE FUNCTION public.get_daily_gallery_available_images_rpc(
+    p_limit integer,
+    p_offset integer,
+    p_search text DEFAULT NULL::text,
+    p_status text DEFAULT 'unused'::text
+)
+RETURNS TABLE(id uuid, url text, title text, description text, status text, daily_gallery_status text, created_at timestamp with time zone, total_count bigint)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $function$
+DECLARE
+    v_total bigint;
+    v_excluded_cats uuid[];
+    v_excluded_tags text[];
+    v_fifteen_days_ago timestamp with time zone := now() - interval '15 days';
+BEGIN
+    -- Get exclusion settings from system config
+    SELECT 
+        COALESCE(ARRAY(SELECT jsonb_array_elements_text(value->'excluded_categories'))::uuid[], '{}'::uuid[]),
+        COALESCE(ARRAY(SELECT jsonb_array_elements_text(value->'excluded_tags'))::text[], '{}'::text[])
+    INTO v_excluded_cats, v_excluded_tags
+    FROM public.system_configs
+    WHERE key = 'daily_gallery_config';
+
+    -- First calculate total count
+    SELECT count(*) INTO v_total
+    FROM public.media_items m
+    WHERE m.status::public.item_status = 'approved'::public.item_status
+        AND m.is_hidden = false
+        AND m.type = 'image'
+        AND m.deleted_at IS NULL
+        AND (m.exclude_from_daily_gallery = false OR m.exclude_from_daily_gallery IS NULL)
+        AND COALESCE(m.daily_gallery_status, 'unused') = p_status
+        AND (p_search IS NULL OR (m.title ILIKE '%' || p_search || '%' OR m.description ILIKE '%' || p_search || '%'))
+        AND (v_excluded_cats = '{}' OR m.category_id IS NULL OR NOT (m.category_id = ANY(v_excluded_cats)))
+        AND (v_excluded_tags = '{}' OR NOT (m.tags && v_excluded_tags))
+        -- 15-day Wechat rule: available OR (used/adopted AND last_used < 15 days ago)
+        AND (
+            m.wechat_draft_status = 'available' 
+            OR m.wechat_draft_status IS NULL 
+            OR (m.wechat_draft_status IN ('used', 'adopted') AND (m.wechat_last_used_at IS NULL OR m.wechat_last_used_at < v_fifteen_days_ago))
+        );
+
+    RETURN QUERY
+    SELECT 
+        m.id, 
+        m.url, 
+        m.title, 
+        m.description, 
+        m.status::text, 
+        COALESCE(m.daily_gallery_status, 'unused')::text as daily_gallery_status,
+        m.created_at,
+        v_total
+    FROM public.media_items m
+    WHERE m.status::public.item_status = 'approved'::public.item_status
+        AND m.is_hidden = false
+        AND m.type = 'image'
+        AND m.deleted_at IS NULL
+        AND (m.exclude_from_daily_gallery = false OR m.exclude_from_daily_gallery IS NULL)
+        AND COALESCE(m.daily_gallery_status, 'unused') = p_status
+        AND (p_search IS NULL OR (m.title ILIKE '%' || p_search || '%' OR m.description ILIKE '%' || p_search || '%'))
+        AND (v_excluded_cats = '{}' OR m.category_id IS NULL OR NOT (m.category_id = ANY(v_excluded_cats)))
+        AND (v_excluded_tags = '{}' OR NOT (m.tags && v_excluded_tags))
+        -- 15-day Wechat rule
+        AND (
+            m.wechat_draft_status = 'available' 
+            OR m.wechat_draft_status IS NULL 
+            OR (m.wechat_draft_status IN ('used', 'adopted') AND (m.wechat_last_used_at IS NULL OR m.wechat_last_used_at < v_fifteen_days_ago))
+        )
+    ORDER BY 
+        -- 尽量使用微信公众号的草稿库素材中已入稿库以外的图片
+        (CASE WHEN m.wechat_draft_status = 'available' OR m.wechat_draft_status IS NULL THEN 0 ELSE 1 END) ASC,
+        -- 优先使用时间靠前的图片
+        m.created_at ASC
+    LIMIT p_limit
+    OFFSET p_offset;
+END;
+$function$;

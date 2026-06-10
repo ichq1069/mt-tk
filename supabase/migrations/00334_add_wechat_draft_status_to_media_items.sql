@@ -1,0 +1,2 @@
+ALTER TABLE public.media_items ADD COLUMN IF NOT EXISTS wechat_draft_status text DEFAULT 'available';
+CREATE INDEX IF NOT EXISTS idx_media_items_wechat_draft_status ON public.media_items(wechat_draft_status);

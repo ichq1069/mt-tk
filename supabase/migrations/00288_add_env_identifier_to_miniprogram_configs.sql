@@ -1,0 +1,1 @@
+alter table miniprogram_configs add column if not exists env_identifier text default 'miaoda';

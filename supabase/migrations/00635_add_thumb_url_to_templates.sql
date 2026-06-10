@@ -1,0 +1,1 @@
+ALTER TABLE wechat_draft_templates ADD COLUMN IF NOT EXISTS thumb_url TEXT;

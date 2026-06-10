@@ -1,0 +1,1 @@
+ALTER TABLE star_hunt_collection_records RENAME COLUMN reward_claimed TO is_rewarded;

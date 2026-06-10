@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="./favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- 防止缓存 HTML 文件 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
+    <!-- SEO 优化 -->
+    <meta name="description" content="视觉赏析 - 分享你眼中的精彩世界，探索图片和视频的美好瞬间" />
+    <meta name="keywords" content="视觉赏析,图片分享,视频分享,媒体平台,创意社区" />
+    <meta name="author" content="视觉赏析" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="视觉赏析 - 分享你眼中的精彩世界" />
+    <meta property="og:description" content="探索图片和视频的美好瞬间" />
+    <meta property="og:image" content="./favicon.png" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="视觉赏析 - 分享你眼中的精彩世界" />
+    <meta name="twitter:description" content="探索图片和视频的美好瞬间" />
+    <meta name="twitter:image" content="./favicon.png" />
+    
+    <!-- 性能优化 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://backend.appmiaoda.com" crossorigin />
+    <link rel="dns-prefetch" href="https://backend.appmiaoda.com" />
+    
+    
+    <!-- PWA 支持 -->
+    <meta name="theme-color" content="#000000" />
+    <link rel="apple-touch-icon" href="./favicon.png" />
+    <link rel="manifest" href="./manifest.json" />
+    <!-- iOS PWA 全屏 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="视觉赏析" />
+    <!-- 禁止 iOS 自动识别电话号码 -->
+    <meta name="format-detection" content="telephone=no" />
+    
+    <title>视觉赏析 - 分享你眼中的精彩世界</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./src/main.tsx"></script>
+    
+    <!-- 性能监控 -->
+    <script>
+      // Web Vitals 监控
+      if ('PerformanceObserver' in window) {
+        // 监控 LCP (Largest Contentful Paint)
+        new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            console.debug('LCP:', entry.renderTime || entry.loadTime);
+          }
+        }).observe({ entryTypes: ['largest-contentful-paint'] });
+        
+        // 监控 FID (First Input Delay)
+        new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            console.debug('FID:', entry.processingStart - entry.startTime);
+          }
+        }).observe({ entryTypes: ['first-input'] });
+        
+        // 监控 CLS (Cumulative Layout Shift)
+        let clsScore = 0;
+        new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            if (!entry.hadRecentInput) {
+              clsScore += entry.value;
+              console.debug('CLS:', clsScore);
+            }
+          }
+        }).observe({ entryTypes: ['layout-shift'] });
+      }
+    </script>
+  </body>
+</html>

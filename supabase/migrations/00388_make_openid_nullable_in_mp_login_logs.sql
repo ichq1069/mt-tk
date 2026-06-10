@@ -1,0 +1,1 @@
+ALTER TABLE mp_login_logs ALTER COLUMN openid DROP NOT NULL;

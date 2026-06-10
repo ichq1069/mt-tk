@@ -1,0 +1,3 @@
+ALTER TABLE album_custom_fields 
+ADD COLUMN is_searchable BOOLEAN DEFAULT FALSE,
+ADD COLUMN is_filterable BOOLEAN DEFAULT FALSE;

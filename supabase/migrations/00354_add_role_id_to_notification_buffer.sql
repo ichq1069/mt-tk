@@ -1,0 +1,1 @@
+ALTER TABLE notification_buffer ADD COLUMN IF NOT EXISTS role_id uuid;

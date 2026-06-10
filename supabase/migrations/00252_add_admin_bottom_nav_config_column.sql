@@ -1,0 +1,1 @@
+ALTER TABLE storage_configs ADD COLUMN IF NOT EXISTS admin_bottom_nav_config JSONB;

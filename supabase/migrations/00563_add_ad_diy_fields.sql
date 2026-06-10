@@ -1,0 +1,4 @@
+ALTER TABLE ads 
+ADD COLUMN IF NOT EXISTS badge_text TEXT DEFAULT '广告位',
+ADD COLUMN IF NOT EXISTS theme_color TEXT,
+ADD COLUMN IF NOT EXISTS badge_position TEXT DEFAULT 'top-right';

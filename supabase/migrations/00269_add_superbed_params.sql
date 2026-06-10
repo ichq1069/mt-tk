@@ -1,0 +1,1 @@
+ALTER TABLE superbed_configs ADD COLUMN thumbnail_params TEXT DEFAULT '?w=300';

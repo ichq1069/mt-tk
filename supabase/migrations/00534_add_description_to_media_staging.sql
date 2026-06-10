@@ -1,0 +1,1 @@
+ALTER TABLE media_staging ADD COLUMN IF NOT EXISTS description TEXT;
