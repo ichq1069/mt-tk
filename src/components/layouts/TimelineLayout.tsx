@@ -87,7 +87,7 @@ const TimelineItem = ({ item, itemIndex, groupIndex, onItemClick, onTagClick, on
                 className="text-[10px] text-white/80 bg-white/20 backdrop-blur-sm px-1.5 py-0.5 rounded-full"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onTagClick?.(mt.tag_id);
+                  onTagClick?.(mt.tag_id, e);
                 }}
               >
                 {mt.tags?.name || ''}

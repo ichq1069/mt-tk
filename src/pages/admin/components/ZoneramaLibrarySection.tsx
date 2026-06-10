@@ -1144,6 +1144,30 @@ export function ZoneramaLibrarySection() {
     }
   };
 
+  // 一键下架全部壁纸库图片（将 transferred_to_wallpaper 全部移到回收站）
+  const handleRemoveAllFromWallpaper = async () => {
+    if (!confirm('确定要将壁纸库中的所有图片全部下架到回收站吗？此操作不可恢复！')) {
+      return;
+    }
+
+    const loadingToast = toast.loading('正在下架壁纸库图片...');
+    try {
+      const { error } = await (supabase
+        .from('zonerama_library') as any)
+        .update({ status: 'recycled', updated_at: new Date().toISOString() })
+        .eq('status', 'transferred_to_wallpaper');
+
+      if (error) throw error;
+
+      toast.success('壁纸库图片已全部下架到回收站', { id: loadingToast });
+      setSelectedPhotos([]);
+      loadPhotos();
+    } catch (error: any) {
+      console.error('[Zonerama 库] 一键下架全部失败:', error);
+      toast.error('下架失败: ' + error.message, { id: loadingToast });
+    }
+  };
+
   // 计算总页数
   const totalPages = Math.ceil(totalCount / pageSize);
 
@@ -1362,6 +1386,18 @@ export function ZoneramaLibrarySection() {
                       </Select>
                     )}
                   </>
+                )}
+
+                {/* 已转移状态的操作 */}
+                {photoStatusFilter === 'transferred' && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleRemoveAllFromWallpaper}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    一键下架全部
+                  </Button>
                 )}
 
                 {/* 回收站和黑名单的操作 */}

@@ -1456,8 +1456,8 @@ export default function Home({ isVisible = true }: { isVisible?: boolean }) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleTagClick = useCallback((tagId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleTagClick = useCallback((tagId: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setActiveTagIds(prev => {
       const next = prev.includes(tagId) ? prev.filter(id => id !== tagId) : [...prev, tagId];
       homePageState.activeTagIds = next;

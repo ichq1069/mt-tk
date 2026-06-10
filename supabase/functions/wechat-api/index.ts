@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { Image } from 'https://deno.land/x/imagescript@1.2.15/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -136,12 +137,80 @@ async function fetchImageWithCorrectInfo(imageUrl: string, isContentImage = fals
   }
 }
 
+// 微信永久素材图片大小限制 (2MB)
+const WECHAT_IMAGE_MAX_SIZE = 2 * 1024 * 1024;
+
+// 压缩图片以适应微信大小限制
+async function compressImageIfNeeded(blob: Blob, contentType: string): Promise<{ blob: Blob; filename: string; contentType: string }> {
+  // 如果已经是小文件且格式为 JPEG/PNG，直接返回
+  const isSupported = contentType === 'image/jpeg' || contentType === 'image/jpg' || contentType === 'image/png';
+  if (blob.size <= WECHAT_IMAGE_MAX_SIZE && isSupported) {
+    return { blob, filename: 'image.jpg', contentType: 'image/jpeg' };
+  }
+
+  try {
+    const arrayBuffer = await blob.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+
+    // 解码图片
+    const image = await Image.decode(uint8Array);
+    if (!image) {
+      throw new Error('无法解码图片');
+    }
+
+    let { width, height } = image;
+
+    // 微信推荐封面尺寸 900x500，最大不超过 2MB
+    // 如果尺寸过大，先按比例缩小
+    const maxDimension = 1280;
+    if (width > maxDimension || height > maxDimension) {
+      const ratio = Math.min(maxDimension / width, maxDimension / height);
+      width = Math.round(width * ratio);
+      height = Math.round(height * ratio);
+      image.resize(width, height);
+    }
+
+    // 第一次尝试：质量 85
+    let encoded = await image.encodeJPEG(85);
+    if (encoded.length > WECHAT_IMAGE_MAX_SIZE) {
+      // 第二次尝试：质量 70
+      encoded = await image.encodeJPEG(70);
+    }
+    if (encoded.length > WECHAT_IMAGE_MAX_SIZE) {
+      // 第三次尝试：进一步缩小尺寸到 900px
+      const ratio = 900 / Math.max(width, height);
+      if (ratio < 1) {
+        image.resize(Math.round(width * ratio), Math.round(height * ratio));
+        encoded = await image.encodeJPEG(70);
+      }
+    }
+
+    const compressedBlob = new Blob([encoded], { type: 'image/jpeg' });
+
+    if (compressedBlob.size > WECHAT_IMAGE_MAX_SIZE) {
+      throw new Error(`压缩后仍超过微信 2MB 限制（当前 ${(compressedBlob.size / 1024 / 1024).toFixed(2)}MB）`);
+    }
+
+    return { blob: compressedBlob, filename: 'image.jpg', contentType: 'image/jpeg' };
+  } catch (err: any) {
+    console.error('图片压缩失败:', err);
+    if (blob.size > WECHAT_IMAGE_MAX_SIZE) {
+      throw new Error(`图片过大（${(blob.size / 1024 / 1024).toFixed(2)}MB），超过微信 2MB 限制，且自动压缩失败。${err.message}`);
+    }
+    // 如果原图不超限但压缩失败，返回原图（转换为 jpg 文件名）
+    return { blob, filename: 'image.jpg', contentType: 'image/jpeg' };
+  }
+}
+
 // 上传图片素材（永久素材，返回 media_id）
 async function uploadImage(accessToken, imageUrl) {
-  const { blob, filename } = await fetchImageWithCorrectInfo(imageUrl, false);
+  const { blob, contentType } = await fetchImageWithCorrectInfo(imageUrl, false);
+  
+  // 压缩图片以适应微信 2MB 限制
+  const { blob: compressedBlob, filename } = await compressImageIfNeeded(blob, contentType);
   
   const formData = new FormData()
-  formData.append('media', blob, filename)
+  formData.append('media', compressedBlob, filename)
   
   const url = `${WECHAT_API_BASE}/material/add_material?access_token=${accessToken}&type=image`
   const response = await fetch(url, {
