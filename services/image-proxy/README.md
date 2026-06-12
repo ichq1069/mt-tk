@@ -1,3 +1,7 @@
+# 欢迎使用你的秒哒应用代码包
+秒哒应用链接
+    URL:https://www.miaoda.cn/projects/app-b5vwlh6eky69
+
 # Image Processing Proxy Service
 
 A Node.js real-time image processing proxy for Cloudflare R2 (CFR2) or other remote image storage.
